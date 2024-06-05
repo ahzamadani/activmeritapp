@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "318671281005",
+    "project_id": "activ-merit",
+    "storage_bucket": "activ-merit.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:318671281005:android:a65a7211925b144cbd9864",
+        "android_client_info": {
+          "package_name": "com.example.activmerit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "318671281005-7m3fprd7e7kg1q2olk8a81eb3sj92a2g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.activmerit",
+            "certificate_hash": "2d8be11ef319a0fe8b91f33d5e2317dc2139c758"
+          }
+        },
+        {
+          "client_id": "318671281005-cqpg4r5j3jrmrcqc20m4o9frl4jefhsg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALa9cOk5GB3fmP69JlNVTVf2spNNFs_WI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "318671281005-cqpg4r5j3jrmrcqc20m4o9frl4jefhsg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "318671281005-gpi8d5a7lhj4783v6e3bd2equ2ehtfrk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.activmerit"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
