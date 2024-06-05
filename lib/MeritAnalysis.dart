@@ -107,7 +107,9 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
           final eventData = eventSnapshot.data() as Map<String, dynamic>?;
           if (eventData == null) continue;
 
-          final eventMerit = eventData['merit'] as int?;
+          final eventMerit = eventData['merit'] is String
+              ? int.tryParse(eventData['merit']) ?? 1
+              : eventData['merit'] as int?;
           if (eventMerit == null) continue;
 
           totalMerit += eventMerit;
