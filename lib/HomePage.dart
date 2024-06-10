@@ -156,6 +156,7 @@ class _HomePageContentState extends State<HomePageContent> {
     const Color(0xff23b6e6),
     const Color(0xff02d39a),
   ];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -166,6 +167,9 @@ class _HomePageContentState extends State<HomePageContent> {
   Future<void> _fetchMeritData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -177,20 +181,26 @@ class _HomePageContentState extends State<HomePageContent> {
         .get();
 
     if (userSnapshot.docs.isEmpty) {
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
     final userData = userSnapshot.docs.first.data() as Map<String, dynamic>;
     final matricNumber = userData['matricNumber'] as String;
 
-    final activityLogs =
+    final activityLogsSnapshot =
         await FirebaseFirestore.instance.collection('activitylog').get();
+
+    final activityLogs = activityLogsSnapshot.docs;
 
     int totalMerit = 0;
     List<FlSpot> chartData = [];
     Map<DateTime, int> meritByMonth = {};
 
-    for (var log in activityLogs.docs) {
+    // Parallel fetching of event data
+    List<Future<void>> futures = activityLogs.map((log) async {
       final scannedUserDoc =
           await log.reference.collection('scannedUser').doc(matricNumber).get();
 
@@ -213,12 +223,14 @@ class _HomePageContentState extends State<HomePageContent> {
           meritByMonth[eventMonth] = meritByMonth[eventMonth]! + eventMerit;
         }
       }
-    }
+    }).toList();
+
+    await Future.wait(futures);
 
     int cumulativeMerit = 0;
     for (var entry in meritByMonth.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key))) {
-      cumulativeMerit = entry.value; // Only use the merit points for the month
+      cumulativeMerit = entry.value;
       chartData
           .add(FlSpot(entry.key.month.toDouble(), cumulativeMerit.toDouble()));
     }
@@ -226,6 +238,7 @@ class _HomePageContentState extends State<HomePageContent> {
     setState(() {
       _accumulatedMerit = totalMerit;
       _chartData = chartData;
+      _isLoading = false;
     });
   }
 
@@ -245,77 +258,87 @@ class _HomePageContentState extends State<HomePageContent> {
               ),
             ),
             SizedBox(height: 20),
-            // Merit Accumulation
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 60.0, vertical: 20.0),
-                child: Column(
-                  children: [
-                    Text(
-                      'MERIT',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      '$_accumulatedMerit',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Line Chart Container
-            Container(
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'Merit',
+            _isLoading
+                ? Text(
+                    'Loading data...',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      fontSize: 24,
+                      color: Colors.white,
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  AspectRatio(
-                    aspectRatio: 1.50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: LineChart(
-                        mainData(),
+                  )
+                : Column(
+                    children: [
+                      Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 60.0, vertical: 20.0),
+                          child: Column(
+                            children: [
+                              Text(
+                                'MERIT',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                '$_accumulatedMerit',
+                                style: TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Merit',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            AspectRatio(
+                              aspectRatio: 1.50,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: LineChart(
+                                  mainData(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
