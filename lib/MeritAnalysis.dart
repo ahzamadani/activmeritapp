@@ -166,7 +166,7 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withOpacity(0.3),
       ),
       body: _loading
           ? Center(child: CircularProgressIndicator())
@@ -188,7 +188,7 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                         margin: const EdgeInsets.all(16),
-                        color: Colors.white,
+                        color: Colors.white, // Ensuring the card color is white
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           child: Column(
