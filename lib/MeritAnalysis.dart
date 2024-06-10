@@ -166,7 +166,7 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: Colors.white.withOpacity(0.3),
+        backgroundColor: Colors.white,
       ),
       body: _loading
           ? Center(child: CircularProgressIndicator())
@@ -182,12 +182,32 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
                   ),
                   child: Column(
                     children: [
-                      AspectRatio(
-                        aspectRatio: 1.70,
-                        child: Padding(
+                      Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        margin: const EdgeInsets.all(16),
+                        color: Colors.white,
+                        child: Container(
                           padding: const EdgeInsets.all(16),
-                          child: LineChart(
-                            mainData(),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Monthly Merit Accumulation',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              AspectRatio(
+                                aspectRatio: 1.70,
+                                child: LineChart(
+                                  mainData(),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
