@@ -252,7 +252,8 @@ class _HomePageContentState extends State<HomePageContent> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 60.0, vertical: 20.0),
                 child: Column(
                   children: [
                     Text(
@@ -271,15 +272,6 @@ class _HomePageContentState extends State<HomePageContent> {
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      '*Already passed the minimum requirement for college',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black54,
-                      ),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
