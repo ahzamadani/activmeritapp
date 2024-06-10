@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'LoginPage.dart';
+import 'UpdateProfilePage.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -20,7 +21,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _fetchUserProfile() async {
     if (user != null) {
-      // Get the user's matricNumber from Firestore
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .where('uid', isEqualTo: user!.uid)
@@ -32,7 +32,6 @@ class _ProfilePageState extends State<ProfilePage> {
         String matricNumber =
             (userDoc.data() as Map<String, dynamic>)['matricNumber'];
 
-        // Fetch user profile using matricNumber
         DocumentSnapshot userProfileDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(matricNumber)
@@ -48,6 +47,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: Stack(
         children: [
           Container(
@@ -66,7 +66,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   : Column(
                       children: [
                         SizedBox(height: 20),
-                        SizedBox(height: 10),
                         Text(
                           userProfile!['name'] ?? 'No name',
                           style: TextStyle(
@@ -127,6 +126,27 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ],
                           ),
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UpdateProfilePage(
+                                    userProfile: userProfile!),
+                              ),
+                            ).then((_) {
+                              _fetchUserProfile();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 50, vertical: 15),
+                          ),
+                          child: Text('Update Profile'),
                         ),
                         SizedBox(height: 20),
                         ElevatedButton(
