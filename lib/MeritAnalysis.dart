@@ -261,7 +261,7 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
   }
 
   LineChartData mainData() {
-    double maxYValue = (_accumulatedMerit + 10).toDouble();
+    double maxYValue = (_accumulatedMerit).toDouble();
 
     return LineChartData(
       gridData: FlGridData(

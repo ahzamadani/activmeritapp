@@ -342,7 +342,7 @@ class _HomePageContentState extends State<HomePageContent> {
   }
 
   LineChartData mainData() {
-    double maxYValue = (_accumulatedMerit + 10).toDouble();
+    double maxYValue = (_accumulatedMerit).toDouble();
 
     return LineChartData(
       gridData: FlGridData(
