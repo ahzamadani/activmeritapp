@@ -54,6 +54,7 @@ class EventHistoryPage extends StatelessWidget {
             return StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('activitylog')
+                  .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -63,14 +64,13 @@ class EventHistoryPage extends StatelessWidget {
                   return Center(child: Text('No event history found.'));
                 }
 
-                // Filter activity logs to find logs where the user's matricNumber is in scannedUser
-                final filteredLogsFuture =
-                    Future.wait(snapshot.data!.docs.map((log) async {
+                final logs = snapshot.data!.docs;
+                final filteredLogsFuture = Future.wait(logs.map((log) async {
                   final scannedUserDoc = await log.reference
                       .collection('scannedUser')
                       .doc(matricNumber)
                       .get();
-                  return scannedUserDoc.exists ? log : null;
+                  return scannedUserDoc.exists ? scannedUserDoc : null;
                 }).toList());
 
                 return FutureBuilder<List<DocumentSnapshot?>>(
@@ -93,16 +93,25 @@ class EventHistoryPage extends StatelessWidget {
                       return Center(child: Text('No event history found.'));
                     }
 
+                    // Ensure the logs are sorted by student scan timestamp in descending order
+                    filteredLogs.sort((a, b) {
+                      final aTimestamp =
+                          (a!['timestamp'] as Timestamp).toDate();
+                      final bTimestamp =
+                          (b!['timestamp'] as Timestamp).toDate();
+                      return bTimestamp.compareTo(aTimestamp);
+                    });
+
                     return ListView.builder(
                       itemCount: filteredLogs.length,
                       itemBuilder: (context, index) {
                         final log = filteredLogs[index]!;
-                        final eventDocRef = log['eventId'] as DocumentReference;
+                        final eventDocRef = log.reference.parent.parent;
                         final timestamp = log['timestamp'] as Timestamp;
                         final dateTime = timestamp.toDate();
 
                         return FutureBuilder<DocumentSnapshot>(
-                          future: eventDocRef.get(),
+                          future: eventDocRef!.get(),
                           builder: (context, eventSnapshot) {
                             if (eventSnapshot.connectionState ==
                                 ConnectionState.waiting) {

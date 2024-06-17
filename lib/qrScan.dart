@@ -22,25 +22,8 @@ class _QRScanState extends State<QRScan> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('QR Scanner'),
-      ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                );
-              },
-              child: Text('OK'),
-            ),
-          ],
-        ),
+        child: CircularProgressIndicator(),
       ),
     );
   }
@@ -48,11 +31,22 @@ class _QRScanState extends State<QRScan> {
   Future<void> _scanQR() async {
     try {
       String eventId = await FlutterBarcodeScanner.scanBarcode(
-        '#4154f1',
-        'Cancel',
-        true,
-        ScanMode.QR,
+        '#4154f1', // Color for the scanner
+        'Cancel', // Text for the cancel button
+        true, // Show flash icon
+        ScanMode.QR, // Scan mode QR
       );
+
+      if (eventId == '-1') {
+        // If the scan is canceled (FlutterBarcodeScanner returns '-1' on cancel)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(),
+          ),
+        );
+        return;
+      }
 
       if (!mounted) return;
 
@@ -117,6 +111,29 @@ class _QRScanState extends State<QRScan> {
       }
 
       final activityId = activityLogSnapshot.docs.first.id;
+
+      // Check if the user has already scanned the event
+      final scannedUserSnapshot = await FirebaseFirestore.instance
+          .collection('activitylog')
+          .doc(activityId)
+          .collection('scannedUser')
+          .doc(matricNumber)
+          .get();
+
+      if (scannedUserSnapshot.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Attendance is already scanned.'),
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(),
+          ),
+        );
+        return;
+      }
 
       // Store the scanned user details in a nested collection
       await FirebaseFirestore.instance

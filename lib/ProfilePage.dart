@@ -194,6 +194,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     builder: (context) => LoginPage(),
                   ),
                 );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Logged out successfully')),
+                );
               },
               child: Text('Confirm'),
             ),

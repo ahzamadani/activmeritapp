@@ -132,7 +132,8 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
 
           events.add({
             'name': eventData['eventName'] ?? 'Unknown Event',
-            'date': eventDate,
+            'eventDate': eventDate,
+            'scanDate': timestamp?.toDate(),
             'time': eventTime,
             'merit': eventMerit,
           });
@@ -146,6 +147,8 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
       monthlyMeritPoints
           .add(FlSpot(entry.key.month.toDouble(), entry.value.toDouble()));
     }
+
+    events.sort((a, b) => b['scanDate'].compareTo(a['scanDate']));
 
     setState(() {
       _accumulatedMerit = totalMerit;
@@ -259,7 +262,7 @@ class _MeritAnalysisState extends State<MeritAnalysis> {
                       ),
                       SizedBox(height: 8.0),
                       Text(
-                          'Date: ${DateFormat('d MMM yyyy').format(event['date'])}'),
+                          'Date: ${DateFormat('d MMM yyyy').format(event['eventDate'])}'),
                       Text('Time: ${event['time']}'),
                     ],
                   ),

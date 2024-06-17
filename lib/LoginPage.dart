@@ -15,18 +15,26 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _signInWithMatricNumberAndPassword() async {
-    try {
-      String matricNumber = _matricNumberController.text.trim();
-      String password = _passwordController.text.trim();
+    String matricNumber = _matricNumberController.text.trim();
+    String password = _passwordController.text.trim();
 
-      // Fetch the user's email from Firestore using matricNumber
+    if (matricNumber.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Insert your matric number and your password")),
+      );
+      return;
+    }
+
+    try {
       DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(matricNumber)
           .get();
 
       if (!userSnapshot.exists) {
-        print('No user found for that matric number.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("No user found for that matric number")),
+        );
         return;
       }
 
@@ -37,6 +45,9 @@ class _LoginPageState extends State<LoginPage> {
 
       User? user = userCredential.user;
       if (user != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Successfully logged in")),
+        );
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => HomePage(),
@@ -45,12 +56,26 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        print('No user found for that matric number.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("No user found for that matric number")),
+        );
       } else if (e.code == 'wrong-password') {
-        print('Wrong password provided for that user.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Wrong password for this matric user")),
+        );
+      } else if (e.code == 'invalid-credential' || e.code == 'invalid-email') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Wrong password for this matric user")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.message}")),
+        );
       }
     } catch (e) {
-      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
 

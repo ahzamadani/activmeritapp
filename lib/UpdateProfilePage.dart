@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 class UpdateProfilePage extends StatefulWidget {
   final Map<String, dynamic> userProfile;
@@ -14,7 +15,6 @@ class UpdateProfilePage extends StatefulWidget {
 class _UpdateProfilePageState extends State<UpdateProfilePage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  late TextEditingController _emailController;
   late TextEditingController _ageController;
   late TextEditingController _phoneController;
   late TextEditingController _genderController;
@@ -24,7 +24,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.userProfile['name']);
-    _emailController = TextEditingController(text: widget.userProfile['email']);
     _ageController =
         TextEditingController(text: widget.userProfile['age'].toString());
     _phoneController = TextEditingController(text: widget.userProfile['phone']);
@@ -37,7 +36,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
     _ageController.dispose();
     _phoneController.dispose();
     _genderController.dispose();
@@ -60,17 +58,30 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         if (userDoc.exists) {
           String matricNumber =
               (userDoc.data() as Map<String, dynamic>)['matricNumber'];
+          bool isChanged = _nameController.text.trim() !=
+                  widget.userProfile['name'] ||
+              _ageController.text.trim() !=
+                  widget.userProfile['age'].toString() ||
+              _phoneController.text.trim() != widget.userProfile['phone'] ||
+              _genderController.text.trim() != widget.userProfile['gender'] ||
+              _collegeController.text.trim() != widget.userProfile['college'];
+
+          if (!isChanged) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Profile details unchanged')),
+            );
+            return;
+          }
 
           await FirebaseFirestore.instance
               .collection('users')
               .doc(matricNumber)
               .update({
-            'name': _nameController.text,
-            'email': _emailController.text,
-            'age': int.tryParse(_ageController.text),
-            'phone': _phoneController.text,
-            'gender': _genderController.text,
-            'college': _collegeController.text,
+            'name': _nameController.text.trim(),
+            'age': int.tryParse(_ageController.text.trim()),
+            'phone': _phoneController.text.trim(),
+            'gender': _genderController.text.trim(),
+            'college': _collegeController.text.trim(),
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -119,17 +130,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                       },
                     ),
                     ProfileUpdateCard(
-                      controller: _emailController,
-                      label: 'Email',
-                      icon: Icons.email_outlined,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        return null;
-                      },
-                    ),
-                    ProfileUpdateCard(
                       controller: _ageController,
                       label: 'Age',
                       icon: Icons.cake_outlined,
@@ -137,6 +137,9 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your age';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Age must be a number';
                         }
                         return null;
                       },
@@ -230,11 +233,34 @@ class ProfileUpdateCard extends StatelessWidget {
                 decoration: InputDecoration(labelText: label),
                 keyboardType: keyboardType,
                 validator: validator,
+                textCapitalization: TextCapitalization.words,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.singleLineFormatter,
+                  CapitalizeWordsTextInputFormatter(),
+                ],
               ),
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+class CapitalizeWordsTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return newValue.copyWith(
+      text: _capitalizeEachWord(newValue.text),
+      selection: newValue.selection,
+    );
+  }
+
+  String _capitalizeEachWord(String input) {
+    return input.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
   }
 }

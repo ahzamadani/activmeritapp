@@ -75,9 +75,17 @@ class _CreateEventPageState extends State<CreateEventPage> {
   }
 
   Future<void> _createEvent() async {
+    String eventName = _eventNameController.text.trim();
+    String placeName = _placeNameController.text.trim();
+
+    if (eventName.isEmpty || placeName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in the event details')),
+      );
+      return;
+    }
+
     String eventId = Uuid().v4();
-    String eventName = _eventNameController.text;
-    String placeName = _placeNameController.text;
     String date = _selectedDate.toString().substring(0, 10);
     String startTime = '${_startTime.format(context)}';
     String endTime = '${_endTime.format(context)}';
