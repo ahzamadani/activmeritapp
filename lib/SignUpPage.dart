@@ -211,6 +211,9 @@ class _SignUpPageState extends State<SignUpPage> {
                       if (value == null || value.isEmpty) {
                         return 'Please fill in your phone number';
                       }
+                      if (int.tryParse(value) == null) {
+                        return 'Phone number must be a number without - (dash)';
+                      }
                       return null;
                     },
                   ),
