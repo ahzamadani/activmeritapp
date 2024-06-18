@@ -141,6 +141,9 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                         if (int.tryParse(value) == null) {
                           return 'Age must be a number';
                         }
+                        if (int.tryParse(value) == null) {
+                          return 'Phone number must be a number without - (dash)';
+                        }
                         return null;
                       },
                     ),
